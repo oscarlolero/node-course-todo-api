@@ -1,12 +1,15 @@
 const expect = require('expect');
 const request = require('supertest');
+const {ObjectID} = require('mongodb');
 
 const {app} = require('./../server');
 const {Todo} = require('./../models/todo');
 
 const todos = [{
+    _id: new ObjectID(),
     text: 'First test todo'
 }, {
+    _id: new ObjectID(),
     text: 'Second test todo'
 }];
 
@@ -68,4 +71,34 @@ describe('GET /todos', () => {
             })
             .end(done); //no hay necesidad de hacerlo como lo de arriba porque no estamos haciendo nada async
     });
+});
+
+describe('GET /todos/:id', () => {
+    it('should return todo doc', (done) => {
+        request(app)
+            .get(`/todos/${todos[0]._id.toHexString()}`)
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.todo.text).toBe(todos[0].text);
+            })
+            .end(done);
+    }); //async test, por eso se agrega done
+
+    it('should return 404 if todo not found', (done) => {
+        //make sure you get a 404 back
+        request(app)
+            .get('/todos/5bd610d71fe9df0b28bf0844') //todo not found
+            .expect(404)
+            .end(done);
+    });    
+    
+    it('should return 404 for non object ids', (done) => {
+        // /todos/123
+        request(app)
+            .get('/todos/123') //invalid id
+            .expect(404)
+            .end(done);
+    });
+
+
 });
