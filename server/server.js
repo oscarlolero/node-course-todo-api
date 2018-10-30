@@ -6,6 +6,7 @@ const {ObjectID} = require('mongodb');
 let {mongoose} = require('./db/moongose');
 let {Todo} = require('./models/todo');
 let {User} = require('./models/user');
+let {authenticate} = require('./middleware/authenticate');
 
 let app = express();
 const port = process.env.PORT || 3000;
@@ -117,6 +118,10 @@ app.post('/users', (req, res) => {
         res.status(400).send(e);
     });
     
+});
+
+app.get('/users/me', authenticate,  (req, res) => { //para poder usarlo aca >:v //>>authenticate.js : para no repetir el codigo de verificar el x-auth, se crea un middlewere
+    res.send(req.user);
 });
 
 app.listen(port, () => {

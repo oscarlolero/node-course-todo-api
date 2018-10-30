@@ -45,6 +45,25 @@ UserSchema.methods.generateAuthToken = function () { //se usa function porque ne
         return token;
     });
 };
+//a function declared on UserSchema.methods instead of UserSchema.statics, it means that thisin this function represents an individual user/document. In a function defined on UserSchema.statics, this would refer to the entire user collection.
+UserSchema.statics.findByToken = function (token) {
+    let decoded;
+
+    try {
+        decoded = jwt.verify(token, 'abc123');
+    } catch (e) {
+        // return new Promise((resolve, reject) =>{
+        //     reject(); //para llamar el catch del server.js
+        // });
+        return Promise.reject('TOKEN INVALIDO O USUARIO NO ENCONTRADO'); //mas simple :v
+    }
+
+    return this.findOne({
+        '_id': decoded._id, //para mantener consistencia nomas se pone entre comillas, aqui no es necesario
+        'tokens.token': token,//para nested documents
+        'tokens.access': 'auth'
+    });
+};
 
 let User = mongoose.model('User', UserSchema);
 // let newUser = User({
