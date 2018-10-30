@@ -39,7 +39,7 @@ UserSchema.methods.toJSON = function() {//override a funcion toJSON
 
 UserSchema.methods.generateAuthToken = function () { //se usa function porque necesitamos el this
     let access = 'auth';
-    let token = jwt.sign({_id: this._id.toHexString(), access}, 'abc123').toString();
+    let token = jwt.sign({_id: this._id.toHexString(), access}, process.env.JWT_SECRET).toString();
 
     this.tokens = this.tokens.concat([{access, token}]);//no se usa push por inconsistencias
     return this.save().then(() => {
@@ -61,7 +61,7 @@ UserSchema.statics.findByToken = function (token) {
     let decoded;
 
     try {
-        decoded = jwt.verify(token, 'abc123');
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (e) {
         // return new Promise((resolve, reject) =>{
         //     reject(); //para llamar el catch del server.js
