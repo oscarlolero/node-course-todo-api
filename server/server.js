@@ -1,4 +1,4 @@
-require('./config/config');//no fue necesario hacer el heroku config:set JWT_SECRET debido a que ya lo hice aqui
+//require('./config/config');//no fue necesario hacer el heroku config:set JWT_SECRET debido a que ya lo hice aqui
 
 const _ = require('lodash');
 const express = require('express');
