@@ -46,6 +46,16 @@ UserSchema.methods.generateAuthToken = function () { //se usa function porque ne
         return token;
     });
 };
+
+UserSchema.methods.removeToken = function (token) {
+    return this.update({
+        $pull: {
+            tokens: {
+                token
+            }
+        }
+    });
+};
 //a function declared on UserSchema.methods instead of UserSchema.statics, it means that thisin this function represents an individual user/document. In a function defined on UserSchema.statics, this would refer to the entire user collection.
 UserSchema.statics.findByToken = function (token) {
     let decoded;
