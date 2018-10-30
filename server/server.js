@@ -13,9 +13,10 @@ const port = process.env.PORT || 3000;
 
 app.use(bodyParser.json()); //se pasa la funcion "json" como middlewere a express.
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authenticate, (req, res) => {
     let todo = new Todo({
-        text: req.body.text
+        text: req.body.text,
+        _creator: req.user._id
     });
 
     todo.save().then((doc) => {
@@ -25,8 +26,10 @@ app.post('/todos', (req, res) => {
     });
 });
 
-app.get('/todos', (req, res) => {
-    Todo.find().then((todos) => { //obtener todos los todos
+app.get('/todos', authenticate, (req, res) => {
+    Todo.find({
+        _creator: req.user._id
+    }).then((todos) => { //obtener todos los todos
         res.send({
             todos
         });
@@ -36,7 +39,7 @@ app.get('/todos', (req, res) => {
 });
 
 //GET /todos/123211
-app.get('/todos/:id', (req, res) => {
+app.get('/todos/:id', authenticate, (req, res) => {
     var id = req.params.id;
 
     //validate id using isValid
@@ -46,7 +49,10 @@ app.get('/todos/:id', (req, res) => {
     }
         
     //sucess
-    Todo.findById(id).then(todo => {
+    Todo.findOne({
+        _id: id,
+        _creator: req.user._id
+    }).then(todo => {
         if(!todo) {//if no todo - send back 404-with empty body
             return res.status(404).send();
         }
@@ -58,7 +64,7 @@ app.get('/todos/:id', (req, res) => {
         res.status(400).send();
     });           
 });
-app.delete('/todos/:id', (req, res) => { 
+app.delete('/todos/:id', authenticate, (req, res) => { 
     //get the id
     var id = req.params.id;
     //validate the id => not valid? return 404
@@ -66,7 +72,10 @@ app.delete('/todos/:id', (req, res) => {
         return res.status(404).send();
     }
     //remove todo by id
-    Todo.findByIdAndRemove(id).then(todo =>{
+    Todo.findOneAndRemove({
+        _id: id,
+        _creator: req.user._id
+    }).then(todo =>{
         if(!todo) {
             return res.status(404).send();
         }
@@ -76,7 +85,7 @@ app.delete('/todos/:id', (req, res) => {
     });
 });
 
-app.patch('/todos/:id', (req, res) => {
+app.patch('/todos/:id', authenticate, (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['text', 'completed']); //para que el usuario solo pueda modificar estas propiedades
 
@@ -91,7 +100,10 @@ app.patch('/todos/:id', (req, res) => {
         body.completedAt = null;
     }
 
-    Todo.findByIdAndUpdate(id, {
+    Todo.findOneAndUpdate({
+        _id: id,
+        _creator: req.user._id    
+    }, {
         $set: body
     }, {
         new: true //traer el nuevo
