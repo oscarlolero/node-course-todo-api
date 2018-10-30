@@ -124,6 +124,18 @@ app.get('/users/me', authenticate,  (req, res) => { //para poder usarlo aca >:v 
     res.send(req.user);
 });
 
+app.post('/users/login', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password']); 
+
+    User.findByCredentials(body.email, body.password).then((user) =>{
+        return user.generateAuthToken().then(token => { //con el return se mantiene la cadena y si hay algun error se llama el catch de abajo
+            res.header('x-auth', token).send(user);
+        });
+    }).catch( e => {
+        res.status(400).send(e);
+    });
+});
+
 app.listen(port, () => {
     console.log('Started on port', port);
 });

@@ -66,6 +66,18 @@ UserSchema.statics.findByToken = function (token) {
     });
 };
 
+UserSchema.statics.findByCredentials = function (email, password) {
+    return this.findOne({email}).then((user) => {
+        if(!user) {
+            return Promise.reject('Email not found!');
+        }
+        //como la libreria de bcrypt no trabaja con promises, si no con callbacks y queremos seguir usando promises, se opta por hacer lo siguiente:
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, user.password, (err, res) => res ?resolve(user) : reject('Password not correct!'));
+        });
+    });
+};
+
 UserSchema.pre('save', function(next) {//llamar antes de guardar
     if(this.isModified('password')) {//video 92//hasingpasswords//10m:44s
         bcrypt.genSalt(10, (err, salt) => {
